@@ -519,6 +519,35 @@ function isSystemString(text: string): boolean {
 }
 
 /**
+ * Check if text is master slide placeholder text that should be filtered out
+ */
+function isMasterSlideText(text: string): boolean {
+  const patterns = [
+    /^Click to edit Master/i,
+    /^Click to edit Master title style$/i,
+    /^Click to edit Master text styles$/i,
+    /^Click to edit Master subtitle style$/i,
+    /Second level/i,
+    /Third level/i,
+    /Fourth level/i,
+    /Fifth level/i,
+    /^Click to add/i,
+    /^Master title/i,
+    /^Master text/i,
+    /^Master subtitle/i,
+  ];
+  
+  // Check for the multi-line master text pattern
+  if (text.includes('Click to edit Master text styles') && 
+      text.includes('Second level') && 
+      text.includes('Third level')) {
+    return true;
+  }
+  
+  return patterns.some(p => p.test(text.trim()));
+}
+
+/**
  * Convert Uint8Array to base64
  */
 function arrayToBase64(arr: Uint8Array): string {
@@ -615,9 +644,21 @@ function createSlides(texts: string[], slideTexts: Map<number, string[]>): Slide
       const slideTextList = slideTexts.get(slideNum) || [];
       if (slideTextList.length === 0) continue;
       
-      // First text is usually the title
-      const title = slideTextList[0] || `Slide ${slides.length + 1}`;
-      const content = slideTextList.slice(1);
+      // Filter out master slide placeholder text
+      const filteredTexts = slideTextList.filter(t => !isMasterSlideText(t));
+      if (filteredTexts.length === 0) continue;
+      
+      // All text goes to textContent - title is just the slide number or first short line
+      // Look for a short title (single line, < 50 chars)
+      let title = `Slide ${slides.length + 1}`;
+      let content = filteredTexts;
+      
+      // Check if first text is a short single-line title
+      const firstText = filteredTexts[0];
+      if (firstText && !firstText.includes('\n') && firstText.length < 50) {
+        title = firstText;
+        content = filteredTexts.slice(1);
+      }
       
       slides.push({
         slideNumber: slides.length + 1,
@@ -652,7 +693,7 @@ function createSlides(texts: string[], slideTexts: Map<number, string[]>): Slide
     const normalized = t.toLowerCase().trim();
     if (seen.has(normalized)) return false;
     seen.add(normalized);
-    return true;
+    return !isMasterSlideText(t);
   });
   
   // Group into slides (heuristic: ~5-8 items per slide)
@@ -668,8 +709,8 @@ function createSlides(texts: string[], slideTexts: Map<number, string[]>): Slide
   };
   
   for (const text of uniqueTexts) {
-    // If no title yet and text is short, use as title
-    if (!currentSlide.title && text.length < 100) {
+    // If no title yet and text is short single-line, use as title
+    if (!currentSlide.title && !text.includes('\n') && text.length < 50) {
       currentSlide.title = text;
     } else {
       currentSlide.textContent.push(text);
