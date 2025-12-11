@@ -4,19 +4,22 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Header, Footer, DropZone, FileList, DataViewer, ExportPanel } from './components';
+import { Header, Footer, Settings, DropZone, FileList, DataViewer, ExportPanel } from './components';
 import { parsePPTX, parsePPT } from './lib';
 import type { ThemeId } from './styles/themes';
 import { THEMES } from './styles/themes';
 import type { ExtractedPresentation } from './types';
+import { useI18n } from './context';
 
-function App() {
+function AppContent() {
+  const { t } = useI18n();
   const [theme, setTheme] = useState<ThemeId>('light');
   const [files, setFiles] = useState<File[]>([]);
   const [extractedData, setExtractedData] = useState<ExtractedPresentation[]>([]);
   const [processingFile, setProcessingFile] = useState<string | null>(null);
   const [viewingPresentation, setViewingPresentation] = useState<ExtractedPresentation | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Load theme from localStorage
   useEffect(() => {
@@ -54,11 +57,11 @@ function App() {
         setExtractedData(prev => [...prev, data]);
       } catch (err) {
         console.error(`Error processing ${file.name}:`, err);
-        setError(`Failed to process ${file.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setError(`${t.errorProcessing}: ${file.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
     setProcessingFile(null);
-  }, [extractedData]);
+  }, [extractedData, t]);
 
   // Handle file selection
   const handleFilesSelected = useCallback((selectedFiles: File[]) => {
@@ -88,17 +91,17 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[rgb(var(--background))]">
-      <Header theme={theme} onThemeChange={setTheme} />
+      <Header onSettingsClick={() => setSettingsOpen(true)} />
 
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Section */}
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-[rgb(var(--foreground))] mb-2">
-              Extract PowerPoint Data
+              {t.extractData}
             </h2>
             <p className="text-[rgb(var(--muted-foreground))]">
-              Upload PPT or PPTX files to extract all content, metadata, and media
+              {t.supportedFormats}
             </p>
           </div>
 
@@ -134,7 +137,7 @@ function App() {
                 onClick={handleClearAll}
                 className="btn btn-ghost text-sm text-[rgb(var(--muted-foreground))]"
               >
-                Clear All Files
+                {t.clearAll}
               </button>
             </div>
           )}
@@ -146,27 +149,27 @@ function App() {
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
                   <span className="text-2xl">📊</span>
                 </div>
-                <h3 className="font-semibold mb-1">Full Data Extraction</h3>
+                <h3 className="font-semibold mb-1">{t.extractedData}</h3>
                 <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  Text, metadata, themes, notes, tables, and more
+                  {t.text}, {t.metadata}, {t.themes}, {t.notes}, {t.tables}
                 </p>
               </div>
               <div className="card p-4 text-center">
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
                   <span className="text-2xl">📁</span>
                 </div>
-                <h3 className="font-semibold mb-1">Multiple Formats</h3>
+                <h3 className="font-semibold mb-1">{t.exportFormat}</h3>
                 <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  Export to JSON, XML, CSV, TXT, HTML, PDF
+                  JSON, XML, CSV, TXT, HTML, PDF
                 </p>
               </div>
               <div className="card p-4 text-center">
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
                   <span className="text-2xl">🖼️</span>
                 </div>
-                <h3 className="font-semibold mb-1">Media Extraction</h3>
+                <h3 className="font-semibold mb-1">{t.media}</h3>
                 <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  Images and media files exported separately
+                  {t.images}
                 </p>
               </div>
             </div>
@@ -176,6 +179,14 @@ function App() {
 
       <Footer />
 
+      {/* Settings Panel */}
+      <Settings
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        theme={theme}
+        onThemeChange={setTheme}
+      />
+
       {/* Data Viewer Modal */}
       {viewingPresentation && (
         <DataViewer
@@ -184,6 +195,17 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+// Main App with I18n Provider
+import { I18nProvider } from './context';
+
+function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
   );
 }
 

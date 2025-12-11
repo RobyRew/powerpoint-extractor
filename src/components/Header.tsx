@@ -1,32 +1,17 @@
 /**
  * Header Component
+ * Matching calendar-event-generator style
  */
 
-import { Sun, Moon, Smartphone, Layers, FileSpreadsheet, Github } from 'lucide-react';
-import type { ThemeId } from '../styles/themes';
-import { THEMES } from '../styles/themes';
+import { Settings as SettingsIcon, FileSpreadsheet } from 'lucide-react';
+import { useI18n } from '../context';
 
 interface HeaderProps {
-  theme: ThemeId;
-  onThemeChange: (theme: ThemeId) => void;
+  onSettingsClick: () => void;
 }
 
-const themeIcons = {
-  light: Sun,
-  dark: Moon,
-  oled: Smartphone,
-  neumorphic: Layers,
-};
-
-export function Header({ theme, onThemeChange }: HeaderProps) {
-  const currentTheme = THEMES.find(t => t.id === theme) || THEMES[0];
-  const ThemeIcon = themeIcons[theme];
-
-  const cycleTheme = () => {
-    const currentIndex = THEMES.findIndex(t => t.id === theme);
-    const nextIndex = (currentIndex + 1) % THEMES.length;
-    onThemeChange(THEMES[nextIndex].id);
-  };
+export function Header({ onSettingsClick }: HeaderProps) {
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[rgb(var(--border))] bg-[rgb(var(--background))] backdrop-blur-sm">
@@ -37,34 +22,21 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-[rgb(var(--foreground))]">
-              PowerPoint Extractor
+              {t.appName}
             </h1>
             <p className="text-xs text-[rgb(var(--muted-foreground))] hidden sm:block">
-              Extract data from PPT & PPTX files
+              {t.appDescription}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="https://github.com/RobyRew/powerpoint-extractor"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ghost p-2"
-            title="View on GitHub"
-          >
-            <Github className="w-5 h-5" />
-          </a>
-          
           <button
-            onClick={cycleTheme}
-            className="btn btn-ghost p-2 relative group"
-            title={`Theme: ${currentTheme.name}`}
+            onClick={onSettingsClick}
+            className="btn btn-ghost p-2 rounded-lg hover:bg-[rgb(var(--muted))] transition-colors"
+            aria-label={t.settings}
           >
-            <ThemeIcon className="w-5 h-5" />
-            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs rounded bg-[rgb(var(--popover))] border border-[rgb(var(--border))] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              {currentTheme.name}
-            </span>
+            <SettingsIcon className="w-5 h-5" />
           </button>
         </div>
       </div>

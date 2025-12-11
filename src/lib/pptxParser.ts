@@ -1,6 +1,7 @@
 /**
  * PPTX Parser - Extract data from PowerPoint files
  * PPTX files are ZIP archives containing XML files
+ * Uses pptx-parser for enhanced parsing with fallback to custom parser
  */
 
 import JSZip from 'jszip';
@@ -14,10 +15,142 @@ import type {
   ThemeInfo 
 } from '../types';
 
+// Import pptx-parser - note this is a default export
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let pptxParser: ((file: File) => Promise<any>) | null = null;
+
+// Dynamic import of pptx-parser
+async function loadPptxParser() {
+  if (!pptxParser) {
+    try {
+      const module = await import('pptx-parser');
+      pptxParser = module.default;
+    } catch (err) {
+      console.warn('pptx-parser not available, using fallback parser:', err);
+    }
+  }
+  return pptxParser;
+}
+
 /**
  * Parse a PPTX file and extract all data
  */
 export async function parsePPTX(file: File): Promise<ExtractedPresentation> {
+  // Try to use pptx-parser first for enhanced parsing
+  const parser = await loadPptxParser();
+  
+  if (parser) {
+    try {
+      const pptxData = await parser(file);
+      return parsePptxParserResult(file, pptxData);
+    } catch (err) {
+      console.warn('pptx-parser failed, falling back to custom parser:', err);
+    }
+  }
+  
+  // Fallback to custom parser
+  return parseWithCustomParser(file);
+}
+
+/**
+ * Convert pptx-parser result to our format
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parsePptxParserResult(file: File, pptxData: any): ExtractedPresentation {
+  const slides: SlideContent[] = [];
+  
+  // pptx-parser returns an array of slides
+  if (Array.isArray(pptxData)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pptxData.forEach((slideData: any, index: number) => {
+      const textContent: string[] = [];
+      const shapes: ShapeInfo[] = [];
+      const tables: TableInfo[] = [];
+      let title = '';
+      
+      // Extract elements from the slide
+      if (slideData && slideData.elements && Array.isArray(slideData.elements)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        slideData.elements.forEach((element: any) => {
+          if (element.type === 'text' || element.content) {
+            const text = element.content || element.text || '';
+            if (text) {
+              textContent.push(text);
+              // Use first text as title if not set
+              if (!title) title = text;
+            }
+          }
+          
+          if (element.type === 'shape') {
+            shapes.push({
+              type: element.shapeType || 'shape',
+              text: element.content || element.text || '',
+            });
+          }
+          
+          if (element.type === 'table' && element.table) {
+            tables.push({
+              rows: element.table.length,
+              columns: element.table[0]?.length || 0,
+              cells: element.table,
+            });
+          }
+        });
+      }
+      
+      slides.push({
+        slideNumber: index + 1,
+        title,
+        textContent,
+        notes: slideData.notes || '',
+        shapes,
+        images: [],
+        tables,
+      });
+    });
+  }
+  
+  return {
+    id: crypto.randomUUID(),
+    fileName: file.name,
+    fileSize: file.size,
+    fileType: 'pptx',
+    extractedAt: new Date().toISOString(),
+    metadata: {
+      title: '',
+      subject: '',
+      creator: '',
+      lastModifiedBy: '',
+      created: '',
+      modified: '',
+      revision: '',
+      category: '',
+      keywords: '',
+      description: '',
+      application: 'pptx-parser',
+      appVersion: '',
+      company: '',
+      manager: '',
+      totalSlides: slides.length,
+      totalWords: 0,
+      totalParagraphs: 0,
+      presentationFormat: '',
+      template: '',
+    },
+    slides,
+    media: [],
+    themes: [],
+    masterSlides: [],
+    customProperties: {
+      parsedWith: 'pptx-parser',
+    },
+  };
+}
+
+/**
+ * Custom PPTX parser using JSZip (fallback)
+ */
+async function parseWithCustomParser(file: File): Promise<ExtractedPresentation> {
   const zip = await JSZip.loadAsync(file);
   
   const metadata = await extractMetadata(zip);
@@ -41,7 +174,10 @@ export async function parsePPTX(file: File): Promise<ExtractedPresentation> {
     media,
     themes,
     masterSlides,
-    customProperties,
+    customProperties: {
+      ...customProperties,
+      parsedWith: 'custom-jszip',
+    },
   };
 }
 
