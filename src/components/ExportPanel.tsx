@@ -59,30 +59,42 @@ export function ExportPanel({ presentations }: ExportPanelProps) {
     setSelectedFormats(newSelected);
   };
 
+  // Generate filename based on original file(s)
+  const getExportFilename = (extension: string) => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    if (presentations.length === 1) {
+      // Single file: use original filename without extension
+      const baseName = presentations[0].fileName.replace(/\.(pptx?|ppt)$/i, '');
+      return `${baseName}-export-${timestamp}.${extension}`;
+    } else {
+      // Multiple files: use generic name
+      return `presentations-export-${timestamp}.${extension}`;
+    }
+  };
+
   const handleExportSingle = async (formatId: string) => {
     setIsExporting(true);
-    const timestamp = new Date().toISOString().split('T')[0];
 
     try {
       switch (formatId) {
         case 'json':
-          downloadFile(exportToJSON(presentations), `export-${timestamp}.json`, 'application/json');
+          downloadFile(exportToJSON(presentations), getExportFilename('json'), 'application/json');
           break;
         case 'xml':
-          downloadFile(exportToXML(presentations), `export-${timestamp}.xml`, 'application/xml');
+          downloadFile(exportToXML(presentations), getExportFilename('xml'), 'application/xml');
           break;
         case 'csv':
-          downloadFile(exportToCSV(presentations), `export-${timestamp}.csv`, 'text/csv');
+          downloadFile(exportToCSV(presentations), getExportFilename('csv'), 'text/csv');
           break;
         case 'txt':
-          downloadFile(exportToText(presentations), `export-${timestamp}.txt`, 'text/plain');
+          downloadFile(exportToText(presentations), getExportFilename('txt'), 'text/plain');
           break;
         case 'html':
-          downloadFile(exportToHTML(presentations), `export-${timestamp}.html`, 'text/html');
+          downloadFile(exportToHTML(presentations), getExportFilename('html'), 'text/html');
           break;
         case 'pdf':
           const pdf = exportToPDF(presentations);
-          pdf.save(`export-${timestamp}.pdf`);
+          pdf.save(getExportFilename('pdf'));
           break;
       }
       setExportSuccess(formatId);

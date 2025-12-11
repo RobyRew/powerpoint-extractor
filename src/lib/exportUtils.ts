@@ -535,24 +535,29 @@ export async function downloadAllAsZip(
   const zip = new JSZip();
   const timestamp = new Date().toISOString().split('T')[0];
   
+  // Generate base filename from original file(s)
+  const baseFilename = presentations.length === 1
+    ? presentations[0].fileName.replace(/\.(pptx?|ppt)$/i, '')
+    : 'presentations';
+  
   if (formats.includes('json')) {
-    zip.file(`export-${timestamp}.json`, exportToJSON(presentations));
+    zip.file(`${baseFilename}-export-${timestamp}.json`, exportToJSON(presentations));
   }
   if (formats.includes('xml')) {
-    zip.file(`export-${timestamp}.xml`, exportToXML(presentations));
+    zip.file(`${baseFilename}-export-${timestamp}.xml`, exportToXML(presentations));
   }
   if (formats.includes('csv')) {
-    zip.file(`export-${timestamp}.csv`, exportToCSV(presentations));
+    zip.file(`${baseFilename}-export-${timestamp}.csv`, exportToCSV(presentations));
   }
   if (formats.includes('txt')) {
-    zip.file(`export-${timestamp}.txt`, exportToText(presentations));
+    zip.file(`${baseFilename}-export-${timestamp}.txt`, exportToText(presentations));
   }
   if (formats.includes('html')) {
-    zip.file(`export-${timestamp}.html`, exportToHTML(presentations));
+    zip.file(`${baseFilename}-export-${timestamp}.html`, exportToHTML(presentations));
   }
   if (formats.includes('pdf')) {
     const pdf = exportToPDF(presentations);
-    zip.file(`export-${timestamp}.pdf`, pdf.output('blob'));
+    zip.file(`${baseFilename}-export-${timestamp}.pdf`, pdf.output('blob'));
   }
   
   // Add media folder
@@ -575,7 +580,7 @@ export async function downloadAllAsZip(
   }
   
   const content = await zip.generateAsync({ type: 'blob' });
-  saveAs(content, `powerpoint-export-${timestamp}.zip`);
+  saveAs(content, `${baseFilename}-export-${timestamp}.zip`);
 }
 
 // Helper functions
