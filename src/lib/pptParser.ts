@@ -8,7 +8,11 @@
  */
 
 import type { ExtractedPresentation, SlideContent, PresentationMetadata, MediaInfo } from '../types';
-import CFB from 'cfb';
+import * as CFB from 'cfb';
+
+// CFB.find exists but TypeScript types don't expose it properly
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cfbFind = (CFB as any).find as (cfb: ReturnType<typeof CFB.read>, path: string) => CFB.CFBEntry | null;
 
 // ============================================================================
 // RECORD TYPES from [MS-PPT] specification
@@ -738,7 +742,7 @@ export async function parsePPT(file: File): Promise<ExtractedPresentation> {
     
     // Parse Summary Information for metadata
     try {
-      const summaryEntry = cfb.find('\x05SummaryInformation');
+      const summaryEntry = cfbFind(cfb, '\x05SummaryInformation');
       if (summaryEntry?.content) {
         const content = summaryEntry.content;
         const summaryData = content instanceof Uint8Array ? content : new Uint8Array(content);
@@ -748,7 +752,7 @@ export async function parsePPT(file: File): Promise<ExtractedPresentation> {
     } catch { /* ignore */ }
     
     // Find the PowerPoint Document stream
-    const pptEntry = cfb.find('PowerPoint Document');
+    const pptEntry = cfbFind(cfb, 'PowerPoint Document');
     if (!pptEntry?.content) {
       throw new Error('PowerPoint Document stream not found');
     }
