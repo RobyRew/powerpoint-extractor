@@ -13,6 +13,8 @@ A web application to extract and export data from PowerPoint files (PPT and PPTX
 - 📁 **Multiple Export Formats** - Export to JSON, XML, CSV, TXT, HTML, and PDF
 - 🖼️ **Media Extraction** - Extract and download images and media files separately
 - 🎨 **Theme Support** - Light, Dark, OLED, and Neumorphic themes
+- 🌐 **Multi-language Support** - English and Spanish (i18n)
+- ⚙️ **Settings Panel** - Customize behavior with command palette support
 - 📱 **Responsive Design** - Works on desktop and mobile devices
 - 🔄 **Multiple Files** - Upload and process multiple files at once
 - 👁️ **Data Viewer** - View extracted data in a beautiful modal interface
@@ -22,7 +24,7 @@ A web application to extract and export data from PowerPoint files (PPT and PPTX
 | Format | Extension | Support Level |
 |--------|-----------|---------------|
 | PowerPoint 2007+ | `.pptx` | Full support |
-| PowerPoint 97-2003 | `.ppt` | Basic text extraction |
+| PowerPoint 97-2003 | `.ppt` | Full text extraction (MS-PPT spec) |
 
 ## Extracted Data
 
@@ -35,8 +37,11 @@ A web application to extract and export data from PowerPoint files (PPT and PPTX
 - **Custom Properties**: Any custom document properties
 
 ### From PPT files (Legacy):
-- Basic text content extraction
-- Limited metadata
+- **Full text extraction** using MS-PPT binary format specification
+- **Unicode and ANSI text** support (UTF-16LE and Windows-1252)
+- **Metadata** from OLE property streams
+- **Image extraction** (JPEG, PNG, EMF, WMF)
+- **Slide organization** with automatic title detection
 
 ## Export Formats
 
@@ -56,8 +61,11 @@ A web application to extract and export data from PowerPoint files (PPT and PPTX
 - **Vite** - Build tool
 - **Tailwind CSS** - Styling
 - **JSZip** - ZIP file handling
+- **CFB** - OLE Compound Document parsing (for .ppt files)
+- **pptx-parser** - PPTX file parsing
 - **jsPDF** - PDF generation
 - **Lucide React** - Icons
+- **i18next** - Internationalization
 
 ## Development
 
@@ -108,6 +116,14 @@ This project is ready for deployment with Dokploy. Just connect your GitHub repo
 ## Privacy
 
 All processing happens locally in your browser. No files are uploaded to any server.
+
+## Credits
+
+- **[SheetJS/js-cfb](https://github.com/SheetJS/js-cfb)** - CFB (Compound File Binary) library for parsing OLE documents
+- **[pptx-parser](https://www.npmjs.com/package/pptx-parser)** - PPTX file parsing library
+- **[js-ppt](https://github.com/nicwaller/js-ppt)** - Reference implementation for PPT binary format parsing
+- **[MS-PPT Specification](https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/)** - Microsoft PowerPoint Binary File Format documentation
+- **[Lucide](https://lucide.dev/)** - Beautiful & consistent icon toolkit
 
 ## License
 
