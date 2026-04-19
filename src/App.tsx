@@ -1,212 +1,100 @@
-/**
- * PowerPoint Extractor - Main Application
- * Extract data from PPT and PPTX files
- */
-
-import { useState, useEffect, useCallback } from 'react';
-import { Header, Footer, Settings, DropZone, FileList, DataViewer, ExportPanel } from './components';
-import { parsePPTX, parsePPT } from './lib';
-import type { ThemeId } from './styles/themes';
-import { THEMES } from './styles/themes';
-import type { ExtractedPresentation } from './types';
-import { useI18n } from './context';
+import { AppShell } from '@/components/layout/AppShell'
+import { CommandPalette } from '@/components/common/CommandPalette'
+import { DropZone } from '@/components/DropZone'
+import { FileList } from '@/components/FileList'
+import { DataViewer } from '@/components/DataViewer'
+import { ExportPanel } from '@/components/ExportPanel'
+import { SettingsPanel } from '@/components/settings/SettingsPanel'
+import { useUIStore } from '@/stores/ui-store'
+import { useFileStore } from '@/stores/file-store'
+import { useSettingsStore } from '@/stores/settings-store'
+import { useKeyboard } from '@/hooks/use-keyboard'
+import { getTranslations } from '@/i18n'
+import { Shield, FileUp, Download } from 'lucide-react'
 
 function AppContent() {
-  const { t } = useI18n();
-  const [theme, setTheme] = useState<ThemeId>('light');
-  const [files, setFiles] = useState<File[]>([]);
-  const [extractedData, setExtractedData] = useState<ExtractedPresentation[]>([]);
-  const [processingFile, setProcessingFile] = useState<string | null>(null);
-  const [viewingPresentation, setViewingPresentation] = useState<ExtractedPresentation | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  // Load theme from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('pptx-extractor-theme') as ThemeId | null;
-    if (savedTheme && THEMES.find(t => t.id === savedTheme)) {
-      setTheme(savedTheme);
-    }
-  }, []);
-
-  // Apply theme class
-  useEffect(() => {
-    THEMES.forEach(t => {
-      document.documentElement.classList.remove(t.className);
-    });
-    const themeConfig = THEMES.find(t => t.id === theme) || THEMES[0];
-    document.documentElement.classList.add(themeConfig.className);
-    localStorage.setItem('pptx-extractor-theme', theme);
-  }, [theme]);
-
-  // Process files
-  const processFiles = useCallback(async (newFiles: File[]) => {
-    for (const file of newFiles) {
-      // Skip if already processed
-      if (extractedData.find(p => p.fileName === file.name)) continue;
-      
-      setProcessingFile(file.name);
-      setError(null);
-
-      try {
-        const isPPTX = file.name.toLowerCase().endsWith('.pptx');
-        const data = isPPTX 
-          ? await parsePPTX(file) 
-          : await parsePPT(file);
-        
-        setExtractedData(prev => [...prev, data]);
-      } catch (err) {
-        console.error(`Error processing ${file.name}:`, err);
-        setError(`${t.errorProcessing}: ${file.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      }
-    }
-    setProcessingFile(null);
-  }, [extractedData, t]);
-
-  // Handle file selection
-  const handleFilesSelected = useCallback((selectedFiles: File[]) => {
-    const newFiles = selectedFiles.filter(
-      f => !files.find(existing => existing.name === f.name)
-    );
-    
-    if (newFiles.length > 0) {
-      setFiles(prev => [...prev, ...newFiles]);
-      processFiles(newFiles);
-    }
-  }, [files, processFiles]);
-
-  // Handle file removal
-  const handleRemoveFile = useCallback((index: number) => {
-    const fileToRemove = files[index];
-    setFiles(prev => prev.filter((_, i) => i !== index));
-    setExtractedData(prev => prev.filter(p => p.fileName !== fileToRemove.name));
-  }, [files]);
-
-  // Handle clear all
-  const handleClearAll = useCallback(() => {
-    setFiles([]);
-    setExtractedData([]);
-    setError(null);
-  }, []);
+  useKeyboard()
+  const activeView = useUIStore((s) => s.activeView)
+  const error = useFileStore((s) => s.error)
+  const { settings } = useSettingsStore()
+  const t = getTranslations(settings.language)
 
   return (
-    <div className="min-h-screen flex flex-col bg-[rgb(var(--background))]">
-      <Header onSettingsClick={() => setSettingsOpen(true)} />
+    <AppShell>
+      <CommandPalette />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Hero Section */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-[rgb(var(--foreground))] mb-2">
-              {t.extractData}
-            </h2>
-            <p className="text-[rgb(var(--muted-foreground))]">
-              {t.supportedFormats}
-            </p>
-          </div>
-
-          {/* Drop Zone */}
-          <DropZone 
-            onFilesSelected={handleFilesSelected}
-            isProcessing={!!processingFile}
-          />
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-4 rounded-lg bg-[rgb(var(--destructive)/0.1)] border border-[rgb(var(--destructive)/0.3)]">
-              <p className="text-sm text-[rgb(var(--destructive))]">{error}</p>
-            </div>
-          )}
-
-          {/* File List */}
-          <FileList
-            files={files}
-            extractedData={extractedData}
-            processingFile={processingFile}
-            onRemoveFile={handleRemoveFile}
-            onViewData={setViewingPresentation}
-          />
-
-          {/* Export Panel */}
-          <ExportPanel presentations={extractedData} />
-
-          {/* Clear All Button */}
-          {files.length > 0 && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleClearAll}
-                className="btn btn-ghost text-sm text-[rgb(var(--muted-foreground))]"
-              >
-                {t.clearAll}
-              </button>
-            </div>
-          )}
-
-          {/* Features Info */}
-          {files.length === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <div className="card p-4 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <h3 className="font-semibold mb-1">{t.extractedData}</h3>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  {t.text}, {t.metadata}, {t.themes}, {t.notes}, {t.tables}
-                </p>
-              </div>
-              <div className="card p-4 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
-                  <span className="text-2xl">📁</span>
-                </div>
-                <h3 className="font-semibold mb-1">{t.exportFormat}</h3>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  JSON, XML, CSV, TXT, HTML, PDF
-                </p>
-              </div>
-              <div className="card p-4 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[rgb(var(--secondary))] flex items-center justify-center">
-                  <span className="text-2xl">🖼️</span>
-                </div>
-                <h3 className="font-semibold mb-1">{t.media}</h3>
-                <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                  {t.images}
-                </p>
-              </div>
-            </div>
-          )}
+      {/* Toast / error */}
+      {error && (
+        <div className="mx-4 mt-4 p-3 rounded-xl bg-danger/10 border border-danger/30 text-sm text-danger">
+          {error}
         </div>
-      </main>
+      )}
 
-      <Footer />
+      <ToastOverlay />
 
-      {/* Settings Panel */}
-      <Settings
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        theme={theme}
-        onThemeChange={setTheme}
-      />
+      {activeView === 'extractor' && <ExtractorView t={t} />}
+      {activeView === 'viewer' && <DataViewer />}
+      {activeView === 'export' && <ExportPanel />}
+      {activeView === 'settings' && <SettingsPanel />}
+    </AppShell>
+  )
+}
 
-      {/* Data Viewer Modal */}
-      {viewingPresentation && (
-        <DataViewer
-          presentation={viewingPresentation}
-          onClose={() => setViewingPresentation(null)}
-        />
+function ExtractorView({ t }: { t: ReturnType<typeof getTranslations> }) {
+  const presentations = useFileStore((s) => s.presentations)
+
+  return (
+    <div className="max-w-3xl mx-auto p-4 pb-24 md:pb-4 space-y-6 animate-fade-in">
+      {/* Hero */}
+      <div className="text-center py-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-text">{t.extractData}</h2>
+        <p className="text-text-3 mt-1">{t.supportedFormats}</p>
+      </div>
+
+      <DropZone />
+      <FileList />
+
+      {/* Feature cards when empty */}
+      {presentations.length === 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
+          {([
+            { icon: FileUp, title: t.featureExtract, desc: t.featureExtractDesc },
+            { icon: Download, title: t.featureExport, desc: t.featureExportDesc },
+            { icon: Shield, title: t.featureMedia, desc: t.featureMediaDesc },
+          ] as const).map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="p-4 rounded-xl bg-surface-2/50 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Icon size={24} className="text-accent" />
+              </div>
+              <h3 className="font-semibold text-text text-sm">{title}</h3>
+              <p className="text-xs text-text-3 mt-1">{desc}</p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
-  );
+  )
 }
 
-// Main App with I18n Provider
-import { I18nProvider } from './context';
+function ToastOverlay() {
+  const toast = useUIStore((s) => s.toastMessage)
+  const toastType = useUIStore((s) => s.toastType)
 
-function App() {
+  if (!toast) return null
+
+  const colors = {
+    success: 'bg-success text-white',
+    error: 'bg-danger text-white',
+    info: 'bg-surface-3 text-text',
+  }
+
   return (
-    <I18nProvider>
-      <AppContent />
-    </I18nProvider>
-  );
+    <div className="fixed top-4 right-4 z-[60] animate-slide-down">
+      <div className={`px-4 py-2 rounded-xl shadow-lg text-sm font-medium ${colors[toastType]}`}>
+        {toast}
+      </div>
+    </div>
+  )
 }
 
-export default App;
+export default AppContent

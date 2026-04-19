@@ -1,47 +1,85 @@
-# PowerPoint Extractor
+<p align="center">
+  <img src="public/favicon.svg" width="80" height="80" alt="PowerPoint Extractor">
+</p>
 
-A web application to extract and export data from PowerPoint files (PPT and PPTX).
+<h1 align="center">PowerPoint Extractor</h1>
 
-![PowerPoint Extractor](https://img.shields.io/badge/PowerPoint-Extractor-orange)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![React](https://img.shields.io/badge/React-18-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-cyan)
+<p align="center">
+  Extract, view, and export data from PowerPoint files — entirely in your browser.
+</p>
+
+<p align="center">
+  <a href="https://robyrew.github.io/powerpoint-extractor/"><strong>Live Demo</strong></a> ·
+  <a href="#features">Features</a> ·
+  <a href="#tech-stack">Tech Stack</a> ·
+  <a href="#development">Development</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-2.0-orange?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/github/license/RobyRew/powerpoint-extractor?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
+</p>
+
+---
 
 ## Features
 
-- 📊 **Full Data Extraction** - Extract text, metadata, themes, speaker notes, tables, shapes, and more
-- 📁 **Multiple Export Formats** - Export to JSON, XML, CSV, TXT, HTML, and PDF
-- 🖼️ **Media Extraction** - Extract and download images and media files separately
-- 🎨 **Theme Support** - Light, Dark, OLED, and Neumorphic themes
-- 🌐 **Multi-language Support** - English and Spanish (i18n)
-- ⚙️ **Settings Panel** - Customize behavior with command palette support
-- 📱 **Responsive Design** - Works on desktop and mobile devices
-- 🔄 **Multiple Files** - Upload and process multiple files at once
-- 👁️ **Data Viewer** - View extracted data in a beautiful modal interface
+**Extraction**
+- Full data extraction from both `.pptx` (Office Open XML) and `.ppt` (MS-PPT binary) files
+- Text, metadata, speaker notes, tables, shapes, themes, and color schemes
+- Image and media extraction (JPEG, PNG, EMF, WMF)
+- Multiple file processing — drag & drop or browse
+
+**Export**
+- Six export formats: **JSON**, **XML**, **CSV**, **TXT**, **HTML**, **PDF**
+- Media download as ZIP archive
+- Customizable filename patterns and export settings
+
+**Interface**
+- Three themes: Light, Dark, and OLED
+- Four languages: English, Spanish, German, French
+- Responsive design with mobile-first bottom navigation
+- Command palette (⌘K) for quick actions
+- Keyboard shortcuts for power users
+- PWA — installable on any device
+
+**Privacy**
+- 100% client-side processing — no files leave your device
+- No analytics, no tracking, no server uploads
 
 ## Supported Formats
 
-| Format | Extension | Support Level |
-|--------|-----------|---------------|
-| PowerPoint 2007+ | `.pptx` | Full support |
-| PowerPoint 97-2003 | `.ppt` | Full text extraction (MS-PPT spec) |
+| Format | Extension | Support |
+|--------|-----------|---------|
+| PowerPoint 2007+ | `.pptx` | Full (metadata, slides, notes, media, themes) |
+| PowerPoint 97-2003 | `.ppt` | Full text extraction, metadata, images |
 
 ## Extracted Data
 
-### From PPTX files:
-- **Metadata**: Title, creator, dates, revision, keywords, description, application version
-- **Slides**: Title, text content, shapes, tables
-- **Speaker Notes**: Full notes for each slide
-- **Themes**: Color schemes, font schemes
-- **Media**: Images, videos, audio files
-- **Custom Properties**: Any custom document properties
+<details>
+<summary><strong>PPTX files</strong></summary>
 
-### From PPT files (Legacy):
+- **Metadata** — Title, creator, dates, revision, keywords, description, app version
+- **Slides** — Title, text content, shapes, tables
+- **Speaker Notes** — Full notes per slide
+- **Themes** — Color schemes, font schemes
+- **Media** — Images, videos, audio files
+- **Custom Properties** — Any custom document properties
+</details>
+
+<details>
+<summary><strong>PPT files (legacy)</strong></summary>
+
 - **Full text extraction** using MS-PPT binary format specification
-- **Unicode and ANSI text** support (UTF-16LE and Windows-1252)
+- **Unicode and ANSI** support (UTF-16LE and Windows-1252)
 - **Metadata** from OLE property streams
 - **Image extraction** (JPEG, PNG, EMF, WMF)
 - **Slide organization** with automatic title detection
+</details>
 
 ## Export Formats
 
@@ -56,35 +94,32 @@ A web application to extract and export data from PowerPoint files (PPT and PPTX
 
 ## Tech Stack
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **JSZip** - ZIP file handling
-- **CFB** - OLE Compound Document parsing (for .ppt files)
-- **pptx-parser** - PPTX file parsing
-- **jsPDF** - PDF generation
-- **Lucide React** - Icons
-- **i18next** - Internationalization
+| Category | Technology |
+|----------|-----------|
+| Framework | React 19 |
+| Language | TypeScript 5.8 |
+| Styling | Tailwind CSS 4 |
+| Build | Vite 6 |
+| State | Zustand 5 |
+| PWA | vite-plugin-pwa |
+| Parsers | JSZip, CFB, pptx-parser |
+| PDF | jsPDF |
+| Icons | Lucide React |
+| Deploy | GitHub Pages |
 
 ## Development
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
+- Node.js 20+
+- npm
 
-### Installation
+### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/RobyRew/powerpoint-extractor.git
 cd powerpoint-extractor
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
@@ -94,13 +129,11 @@ npm run dev
 npm run build
 ```
 
-### Preview production build
+### Preview
 
 ```bash
 npm run preview
 ```
-
-## Deployment
 
 ### Docker
 
@@ -109,26 +142,24 @@ docker build -t powerpoint-extractor .
 docker run -p 80:80 powerpoint-extractor
 ```
 
-### Dokploy
+## Deployment
 
-This project is ready for deployment with Dokploy. Just connect your GitHub repository and deploy.
+Push to `main` and GitHub Actions will build and deploy to GitHub Pages automatically.
 
-## Privacy
-
-All processing happens locally in your browser. No files are uploaded to any server.
+Manual deployment is also supported via Docker or any static hosting provider — just serve the `dist/` folder.
 
 ## Credits
 
-- **[SheetJS/js-cfb](https://github.com/SheetJS/js-cfb)** - CFB (Compound File Binary) library for parsing OLE documents
-- **[pptx-parser](https://www.npmjs.com/package/pptx-parser)** - PPTX file parsing library
-- **[js-ppt](https://github.com/nicwaller/js-ppt)** - Reference implementation for PPT binary format parsing
-- **[MS-PPT Specification](https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/)** - Microsoft PowerPoint Binary File Format documentation
-- **[Lucide](https://lucide.dev/)** - Beautiful & consistent icon toolkit
+- [SheetJS/js-cfb](https://github.com/SheetJS/js-cfb) — OLE Compound Document parsing
+- [pptx-parser](https://www.npmjs.com/package/pptx-parser) — PPTX file parsing
+- [js-ppt](https://github.com/nicwaller/js-ppt) — PPT binary format reference
+- [MS-PPT Specification](https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/) — Microsoft binary format docs
+- [Lucide](https://lucide.dev/) — Icon toolkit
 
 ## License
 
-MIT License - feel free to use this project for any purpose.
+[MIT](LICENSE)
 
-## Author
+---
 
-Made with ❤️ by [RobyRew](https://github.com/RobyRew)
+<p align="center">Made with ❤️ by <a href="https://github.com/RobyRew">RobyRew</a></p>
