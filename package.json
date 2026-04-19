@@ -2,7 +2,7 @@
   "name": "powerpoint-extractor",
   "private": true,
   "version": "2.0.0",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -135,18 +135,38 @@ npm run build
 npm run preview
 ```
 
-### Docker
+<details>
+<summary><strong>Docker</strong></summary>
 
 ```bash
 docker build -t powerpoint-extractor .
 docker run -p 80:80 powerpoint-extractor
 ```
 
-## Deployment
+Uses multi-stage build: `node:20-alpine` → `nginx:alpine`. Production-ready with gzip, caching headers, and SPA routing.
 
-Push to `main` and GitHub Actions will build and deploy to GitHub Pages automatically.
+</details>
 
-Manual deployment is also supported via Docker or any static hosting provider — just serve the `dist/` folder.
+<details>
+<summary><strong>GitHub Pages Deployment</strong></summary>
+
+This project includes a GitHub Actions workflow that builds and deploys to GitHub Pages on every push to `main`.
+
+1. **Fork** or clone this repository
+2. Go to **Settings → Pages**
+3. Set source to **GitHub Actions**
+4. Push to `main` — the site deploys automatically
+
+The workflow sets `BASE_URL=/powerpoint-extractor/` for correct asset paths.
+
+</details>
+
+<details>
+<summary><strong>Static Hosting</strong></summary>
+
+Run `npm run build` and serve the `dist/` folder with any static hosting provider (Netlify, Vercel, Cloudflare Pages, etc.).
+
+</details>
 
 ## Credits
 
@@ -158,7 +178,7 @@ Manual deployment is also supported via Docker or any static hosting provider �
 
 ## License
 
-[MIT](LICENSE)
+Licensed under the [Apache License 2.0](LICENSE). You are free to use, modify, and distribute this software — but you **must retain the [NOTICE](NOTICE) file** and give credit to the original project and author in any copies or derivative works.
 
 ---
 
