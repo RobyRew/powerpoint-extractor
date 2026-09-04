@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Non-secret VITE_* analytics config — must reach git and the build context.
+!.env.production
