@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1.10
 FROM node:22-alpine AS build
 WORKDIR /app
+# git: the @robyrew/* dependencies are github: URLs, which npm fetches with git,
+# and node:22-alpine ships without it.
+RUN apk add --no-cache git
 COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund
 COPY . .
