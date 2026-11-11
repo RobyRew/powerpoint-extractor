@@ -24,7 +24,14 @@ async function loadPptxParser() {
   if (!pptxParser) {
     try {
       const module = await import('pptx-parser');
-      pptxParser = module.default;
+      // pptx-parser ships a webpack bundle whose CommonJS exports are `{ __esModule: true, default: parse }`.
+      // Vite 6 (Rollup's commonjs plugin) honoured `__esModule` and gave `parse` as `default`; Vite 8 (Rolldown)
+      // gives the whole exports object as `default`, so the function sits one level deeper. Calling that object
+      // threw "t is not a function" and every file went to the fallback parser.
+      const exported: unknown = module.default;
+      const parse = typeof exported === 'function' ? exported : (exported as { default?: unknown } | null)?.default;
+      pptxParser = typeof parse === 'function' ? (parse as NonNullable<typeof pptxParser>) : null;
+      if (!pptxParser) console.warn('pptx-parser loaded without a callable default export, using fallback parser');
     } catch (err) {
       console.warn('pptx-parser not available, using fallback parser:', err);
     }
