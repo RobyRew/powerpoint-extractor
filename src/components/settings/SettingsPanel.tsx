@@ -5,17 +5,13 @@ import { useSettingsStore } from '@/stores/settings-store'
 import { getTranslations } from '@/i18n'
 import { getStorageSize, clearAppData } from '@/lib/storage'
 import { APP_VERSION } from '@/lib/constants'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { RotateCcw, Trash2, HardDrive, Shield } from 'lucide-react'
 
 export function SettingsPanel() {
   const { settings, set, resetAll } = useSettingsStore()
   const t = getTranslations(settings.language)
-  const [storageUsed, setStorageUsed] = useState('')
-
-  useEffect(() => {
-    setStorageUsed(getStorageSize())
-  }, [])
+  const [storageUsed] = useState(getStorageSize)
 
   const handleClearData = () => {
     if (confirm(t.clearAppDataConfirm)) {

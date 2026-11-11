@@ -46,10 +46,15 @@ export function CommandPalette() {
       )
     : commands
 
-  useEffect(() => {
+  // Reset the search whenever the palette opens or closes. Adjusted during render
+  // (React's "storing information from previous renders" pattern) instead of in an
+  // effect, which react-hooks/set-state-in-effect rejects as a cascading render.
+  const [wasOpen, setWasOpen] = useState(isCommandPaletteOpen)
+  if (wasOpen !== isCommandPaletteOpen) {
+    setWasOpen(isCommandPaletteOpen)
     setSelectedIndex(0)
     setQuery('')
-  }, [isCommandPaletteOpen])
+  }
 
   useEffect(() => {
     if (isCommandPaletteOpen) inputRef.current?.focus()

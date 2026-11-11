@@ -358,7 +358,10 @@ function cleanText(text: string): string {
   return text
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
+    // Control characters are what this strips, so the pattern has to name them.
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    // eslint-disable-next-line no-control-regex
     .replace(/\x0D/g, '\n')
     .replace(/\t/g, ' ')
     .trim();
@@ -371,6 +374,7 @@ function isValidText(text: string): boolean {
   if (!text || text.length < 2) return false;
   
   // Must have at least some readable characters
+  // eslint-disable-next-line no-control-regex
   const readableChars = text.replace(/[\s\x00-\x1F]/g, '');
   if (readableChars.length === 0) return false;
   
@@ -378,7 +382,6 @@ function isValidText(text: string): boolean {
   let latin = 0;       // A-Za-z and Latin extended
   let digits = 0;      // 0-9
   let punctuation = 0; // Common punctuation
-  let spaces = 0;      // Whitespace
   let highUnicode = 0; // Unusual Unicode ranges
   let control = 0;     // Control characters
   
@@ -394,7 +397,7 @@ function isValidText(text: string): boolean {
     } else if (code >= 0x30 && code <= 0x39) {
       digits++;
     } else if (code === 0x20 || code === 0x0A || code === 0x0D || code === 0x09) {
-      spaces++;
+      // Whitespace: counted as neither readable nor garbage.
     } else if ((code >= 0x21 && code <= 0x2F) ||  // !"#$%&'()*+,-./
                (code >= 0x3A && code <= 0x40) ||  // :;<=>?@
                (code >= 0x5B && code <= 0x60) ||  // [\]^_`
@@ -435,6 +438,7 @@ function isValidText(text: string): boolean {
   
   // Check for known garbage patterns
   const garbagePatterns = [
+    // eslint-disable-next-line no-control-regex
     /^[\x00-\x1F\x7F-\x9F]+$/,     // Control characters only
     /^[ༀ-࿿]+$/,                    // Tibetan block
     /^[Ḁ-ỿ]{1,3}$/,                // Very short Latin Extended Additional
@@ -479,13 +483,13 @@ function isSystemString(text: string): boolean {
     /^_VBA_PROJECT/i,
     /^___PPT\d*$/,
     /^\[Content_Types\]/,
-    /^_rels[\/\\]/,
-    /^drs[\/\\]/,
-    /^ppt[\/\\]/,
+    /^_rels[/\\]/,
+    /^drs[/\\]/,
+    /^ppt[/\\]/,
     /\.xml$/i,
     /\.rels$/i,
     /^PK/,
-    /^theme[\/\\]/i,
+    /^theme[/\\]/i,
     /^slideLayout/i,
     /^slideMaster/i,
     /^Rectangle \d+$/i,

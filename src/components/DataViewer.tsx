@@ -94,7 +94,8 @@ function PresentationDetail({
 
   const toggleSlide = (num: number) => {
     const next = new Set(expandedSlides)
-    next.has(num) ? next.delete(num) : next.add(num)
+    if (next.has(num)) next.delete(num)
+    else next.add(num)
     setExpandedSlides(next)
   }
 
@@ -113,7 +114,7 @@ function PresentationDetail({
           <ArrowLeft size={16} />
         </Button>
         <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
-          <FileText size={20} className="text-white" />
+          <FileText size={20} className="text-on-accent" />
         </div>
         <div className="min-w-0">
           <h2 className="font-semibold text-text truncate">{presentation.fileName}</h2>
@@ -306,7 +307,7 @@ function SlideCard({
         )}
       >
         {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold shrink-0">
+        <div className="w-8 h-8 rounded-full bg-accent text-on-accent flex items-center justify-center text-sm font-semibold shrink-0">
           {slide.slideNumber}
         </div>
         <div className="flex-1 min-w-0">

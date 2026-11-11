@@ -97,9 +97,9 @@
 | Category | Technology |
 |----------|-----------|
 | Framework | React 19 |
-| Language | TypeScript 5.8 |
+| Language | TypeScript 7 |
 | Styling | Tailwind CSS 4 |
-| Build | Vite 6 |
+| Build | Vite 8 |
 | State | Zustand 5 |
 | PWA | vite-plugin-pwa |
 | Parsers | JSZip, CFB, pptx-parser |
@@ -111,7 +111,7 @@
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 26+
 - npm
 
 ### Setup
